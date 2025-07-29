@@ -15,24 +15,26 @@ An automated system for managing driver records in Samsara Fleet Management via 
 
 ```
 samsara-fleet-manager/
-├── samsara_fleet_manager/   # Python package with application modules
-│   ├── __init__.py
-│   ├── api.py
-│   ├── driver_manager.py
-│   ├── email_reporter.py
-│   └── username_utils.py
-├── mappings/                # Lookup CSV files used for validation
-│   ├── positions.csv
-│   ├── locations.csv
-│   └── never_positions.csv
-├── input/                   # Input CSV files directory
-│   └── new_hires_example.csv
 ├── main.py                  # Entry point when running manually
+├── driver_manager.py        # Core driver logic
+├── email_reporter.py        # Email reporting helpers
+├── username_utils.py        # Username utilities
 ├── config.py                # Configuration helpers
+├── validate_mappings_script.py
+├── positions.csv            # Mapping files
+├── locations.csv
+├── never_positions.csv
+├── usernames.csv
+├── input/                   # Input CSV files directory
+│   ├── new_hires_example.csv
+│   └── NEW_HIRES_example.xlsx
+├── Headcount Report.xlsx    # Example spreadsheet for verifying totals
 ├── requirements.txt         # Python dependencies
+├── requirements-dev.txt     # Developer dependencies
 ├── .env.example             # Example environment configuration
 ├── README.md                # Project documentation
-└── tests/                   # Unit tests
+├── tests/                   # Unit tests
+└── pytest.ini
 ```
 
 ## Setup Instructions
@@ -74,6 +76,10 @@ CSV columns:
 - **license_state**: License state (2-letter code)
 - **location_tag_id**: Samsara tag ID for location
 - **deactivation_reason**: Reason for deactivation
+
+The repository also includes **Headcount Report.xlsx**, which provides a
+snapshot of current driver counts. You can use it as a reference to verify
+that the automated results match your internal records.
 
 ## Using with Claude Code
 
@@ -191,3 +197,5 @@ For issues with this system:
 2. Validate your CSV format
 3. Test with `--dry-run` mode
 4. Verify API key permissions in Samsara
+
+If problems persist, open an issue or contact the repository maintainer for help.
