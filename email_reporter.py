@@ -13,6 +13,7 @@ from email.mime.multipart import MIMEMultipart
 # Try to import win32com for Outlook integration
 try:
     import win32com.client
+
     OUTLOOK_AVAILABLE = True
 except ImportError:
     OUTLOOK_AVAILABLE = False
@@ -25,11 +26,11 @@ logger = logging.getLogger(__name__)
 
 class EmailReporter:
     """Generates and sends email reports for driver operations"""
-    
+
     def __init__(self, config: Dict[str, any], use_outlook: bool = False):
         """
         Initialize Email Reporter
-        
+
         Args:
             config: Email configuration dictionary containing:
                 - smtp_server: SMTP server address
@@ -43,27 +44,30 @@ class EmailReporter:
         """
         self.config = config
         self.use_outlook = use_outlook and OUTLOOK_AVAILABLE
-        
+
         if self.use_outlook:
             logger.info("Using Outlook COM for email sending")
         else:
             logger.info("Using SMTP for email sending")
-    
-    def send_operations_report(self, operations_log: Dict[str, List], 
-                             summary_stats: Dict[str, int]) -> bool:
+
+    def send_operations_report(
+        self, operations_log: Dict[str, List], summary_stats: Dict[str, int]
+    ) -> bool:
         """
         Send email report of driver operations
-        
+
         Args:
             operations_log: Dictionary with created, updated, deactivated, and errors
             summary_stats: Summary statistics
-            
+
         Returns:
             True if email sent successfully
         """
-        subject = f"Samsara Driver Operations Report - {datetime.now().strftime('%Y-%m-%d')}"
+        subject = (
+            f"Samsara Driver Operations Report - {datetime.now().strftime('%Y-%m-%d')}"
+        )
         html_body = self._generate_html_report(operations_log, summary_stats)
-        
+
         try:
             if self.use_outlook:
                 return self._send_via_outlook(subject, html_body)
@@ -72,11 +76,12 @@ class EmailReporter:
         except Exception as e:
             logger.error(f"Failed to send email report: {e}")
             return False
-    
-    def _generate_html_report(self, operations_log: Dict[str, List], 
-                            summary_stats: Dict[str, int]) -> str:
+
+    def _generate_html_report(
+        self, operations_log: Dict[str, List], summary_stats: Dict[str, int]
+    ) -> str:
         """Generate HTML email report"""
-        
+
         template = Template("""
 <!DOCTYPE html>
 <html>
@@ -225,108 +230,110 @@ class EmailReporter:
 </body>
 </html>
         """)
-        
+
         # Custom filters
         def format_time(timestamp):
             try:
-                dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
-                return dt.strftime('%Y-%m-%d %H:%M')
+                dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+                return dt.strftime("%Y-%m-%d %H:%M")
             except Exception:
                 return timestamp
-        
+
         def format_row(row):
             if isinstance(row, dict):
                 return f"{row.get('name', 'Unknown')} ({row.get('payroll_id', 'N/A')})"
             return str(row)
-        
-        template.filters['format_time'] = format_time
-        template.filters['format_row'] = format_row
-        
+
+        template.filters["format_time"] = format_time
+        template.filters["format_row"] = format_row
+
         # Render template
         html = template.render(
             operations=operations_log,
             stats=summary_stats,
-            report_date=datetime.now().strftime('%B %d, %Y'),
-            report_time=datetime.now().strftime('%I:%M %p')
+            report_date=datetime.now().strftime("%B %d, %Y"),
+            report_time=datetime.now().strftime("%I:%M %p"),
         )
-        
+
         return html
-    
+
     def _send_via_smtp(self, subject: str, html_body: str) -> bool:
         """Send email via SMTP"""
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = subject
-        msg['From'] = self.config['from_email']
-        msg['To'] = ', '.join(self.config['to_emails'])
-        
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = subject
+        msg["From"] = self.config["from_email"]
+        msg["To"] = ", ".join(self.config["to_emails"])
+
         # Create plain text version
         text_body = self._html_to_text(html_body)
-        
+
         # Attach parts
-        part1 = MIMEText(text_body, 'plain')
-        part2 = MIMEText(html_body, 'html')
+        part1 = MIMEText(text_body, "plain")
+        part2 = MIMEText(html_body, "html")
         msg.attach(part1)
         msg.attach(part2)
-        
+
         try:
             # Connect to server
-            server = smtplib.SMTP(self.config['smtp_server'], self.config.get('smtp_port', 587))
-            
-            if self.config.get('use_tls', True):
+            server = smtplib.SMTP(
+                self.config["smtp_server"], self.config.get("smtp_port", 587)
+            )
+
+            if self.config.get("use_tls", True):
                 server.starttls()
-            
+
             # Login if credentials provided
-            if self.config.get('smtp_username') and self.config.get('smtp_password'):
-                server.login(self.config['smtp_username'], self.config['smtp_password'])
-            
+            if self.config.get("smtp_username") and self.config.get("smtp_password"):
+                server.login(self.config["smtp_username"], self.config["smtp_password"])
+
             # Send email
             server.send_message(msg)
             server.quit()
-            
+
             logger.info(f"Email sent successfully to {msg['To']}")
             return True
-            
+
         except Exception as e:
             logger.error(f"SMTP error: {e}")
             raise
-    
+
     def _send_via_outlook(self, subject: str, html_body: str) -> bool:
         """Send email via Outlook COM automation"""
         try:
-            outlook = win32com.client.Dispatch('Outlook.Application')
+            outlook = win32com.client.Dispatch("Outlook.Application")
             mail = outlook.CreateItem(0)  # 0 = Mail item
-            
+
             mail.Subject = subject
             mail.HTMLBody = html_body
-            mail.To = '; '.join(self.config['to_emails'])
-            
+            mail.To = "; ".join(self.config["to_emails"])
+
             # Optional: Add CC recipients
-            if self.config.get('cc_emails'):
-                mail.CC = '; '.join(self.config['cc_emails'])
-            
+            if self.config.get("cc_emails"):
+                mail.CC = "; ".join(self.config["cc_emails"])
+
             mail.Send()
-            
+
             logger.info(f"Email sent successfully via Outlook to {mail.To}")
             return True
-            
+
         except Exception as e:
             logger.error(f"Outlook error: {e}")
             raise
-    
+
     def _html_to_text(self, html: str) -> str:
         """Simple HTML to text conversion"""
         # This is a basic implementation - could be improved with BeautifulSoup
         import re
-        
+
         # Remove style tags
-        text = re.sub(r'<style.*?</style>', '', html, flags=re.DOTALL)
+        text = re.sub(r"<style.*?</style>", "", html, flags=re.DOTALL)
         # Remove script tags
-        text = re.sub(r'<script.*?</script>', '', text, flags=re.DOTALL)
+        text = re.sub(r"<script.*?</script>", "", text, flags=re.DOTALL)
         # Remove HTML tags
-        text = re.sub(r'<[^>]+>', '', text)
+        text = re.sub(r"<[^>]+>", "", text)
         # Clean up whitespace
-        text = re.sub(r'\s+', ' ', text)
-        
+        text = re.sub(r"\s+", " ", text)
+
         return text.strip()
 
 
@@ -334,37 +341,37 @@ class EmailReporter:
 if __name__ == "__main__":
     # Example configuration for testing
     email_config = {
-        'smtp_server': 'smtp.office365.com',
-        'smtp_port': 587,
-        'smtp_username': 'your_email@company.com',
-        'smtp_password': 'your_password',
-        'from_email': 'your_email@company.com',
-        'to_emails': ['recipient@company.com'],
-        'use_tls': True
+        "smtp_server": "smtp.office365.com",
+        "smtp_port": 587,
+        "smtp_username": "your_email@company.com",
+        "smtp_password": "your_password",
+        "from_email": "your_email@company.com",
+        "to_emails": ["recipient@company.com"],
+        "use_tls": True,
     }
-    
+
     # Example data
     test_operations = {
-        'created': [
+        "created": [
             {
-                'driver_id': '123',
-                'name': 'John Smith',
-                'payroll_id': 'EMP001',
-                'timestamp': datetime.utcnow().isoformat()
+                "driver_id": "123",
+                "name": "John Smith",
+                "payroll_id": "EMP001",
+                "timestamp": datetime.utcnow().isoformat(),
             }
         ],
-        'updated': [],
-        'deactivated': [],
-        'errors': []
+        "updated": [],
+        "deactivated": [],
+        "errors": [],
     }
-    
+
     test_stats = {
-        'drivers_created': 1,
-        'drivers_updated': 0,
-        'drivers_deactivated': 0,
-        'errors': 0
+        "drivers_created": 1,
+        "drivers_updated": 0,
+        "drivers_deactivated": 0,
+        "errors": 0,
     }
-    
+
     # Send test email
     # reporter = EmailReporter(email_config, use_outlook=True)
     # reporter.send_operations_report(test_operations, test_stats)
