@@ -1,12 +1,14 @@
 import pandas as pd
 from typing import Dict, Optional
 import math
+from pathlib import Path
+import config
 
 
 def load_headcount_data(
     xlsx_path: str,
     *,
-    locations_csv: str = "locations.csv",
+    locations_csv: Path = Path(config.MAPPINGS_DIR) / "locations.csv",
     payroll_id_column: Optional[str] = None,
 ) -> Dict[str, Dict[str, Optional[str]]]:
     """Load headcount data from an Excel spreadsheet.
