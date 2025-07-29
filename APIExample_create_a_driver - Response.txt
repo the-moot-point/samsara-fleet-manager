@@ -1,0 +1,89 @@
+{
+  "data": {
+    "attributes": [
+      {
+        "id": "123e4567-e89b-12d3-a456-426614174000",
+        "name": "License Certifications",
+        "numberValues": [
+          0
+        ],
+        "stringValues": [
+          "string"
+        ]
+      }
+    ],
+    "carrierSettings": {
+      "carrierName": "Acme Inc.",
+      "dotNumber": 98231,
+      "homeTerminalAddress": "1234 Pear St., Scranton, PA 62814",
+      "homeTerminalName": "Acme Inc.",
+      "mainOfficeAddress": "1234 Pear St., Scranton, PA 62814"
+    },
+    "createdAtTime": "2019-05-18T20:27:35Z",
+    "currentIdCardCode": "941767043",
+    "driverActivationStatus": "active",
+    "eldAdverseWeatherExemptionEnabled": false,
+    "eldBigDayExemptionEnabled": false,
+    "eldDayStartHour": 0,
+    "eldExempt": false,
+    "eldExemptReason": "Bad driver",
+    "eldPcEnabled": false,
+    "eldSettings": {
+      "rulesets": [
+        {
+          "break": "Property (off-duty/sleeper)",
+          "cycle": "USA 60 hour / 7 day",
+          "jurisdiction": "AR",
+          "restart": "Default",
+          "shift": "US Interstate Property"
+        }
+      ]
+    },
+    "eldYmEnabled": false,
+    "externalIds": {
+      "maintenanceId": "250020",
+      "payrollId": "ABFS18600"
+    },
+    "hasDrivingFeaturesHidden": true,
+    "id": "123",
+    "isDeactivated": false,
+    "licenseNumber": "E1234567",
+    "licenseState": "CA",
+    "locale": "us",
+    "name": "Susan Jones",
+    "notes": "Also goes by the nickname Furious Fred.",
+    "peerGroupTag": {
+      "id": "3914",
+      "name": "East Coast",
+      "parentTagId": "4815"
+    },
+    "phone": "5558234327",
+    "staticAssignedVehicle": {
+      "id": "123456789",
+      "name": "Midwest Truck #4"
+    },
+    "tachographCardNumber": "1000000492436002",
+    "tags": [
+      {
+        "id": "3914",
+        "name": "East Coast",
+        "parentTagId": "4815"
+      }
+    ],
+    "timezone": "America/Los_Angeles",
+    "updatedAtTime": "2019-06-13T19:08:25Z",
+    "usDriverRulesetOverride": {
+      "cycle": "TX 70 hour / 7 day",
+      "restart": "34-hour Restart",
+      "restbreak": "None",
+      "usStateToOverride": "TX"
+    },
+    "username": "SusanJones",
+    "vehicleGroupTag": {
+      "id": "3914",
+      "name": "East Coast",
+      "parentTagId": "4815"
+    },
+    "waitingTimeDutyStatusEnabled": false
+  }
+}
