@@ -190,7 +190,6 @@ class DriverManager:
                 "driver_id": created["id"],
                 "name": created["name"],
                 "payroll_id": row.get("payroll_id"),
-                "timestamp": datetime.now(timezone.utc).isoformat(),
             }
         )
 
