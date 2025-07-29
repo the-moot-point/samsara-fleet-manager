@@ -1,0 +1,8 @@
+# Default configuration for Codex CLI
+# Copy or symlink this file to ~/.codex/config.yaml to make it global,
+# or export CODEX_CONFIG_PATH=$(pwd)/codex.yaml before invoking codex.
+
+approvalMode: auto-edit   # automatically apply patches that pass tests
+model: o3                 # default model (override with --model)
+defaultShell: bash
+projectDoc: codex.md      # relative path to project context doc
