@@ -1,14 +1,93 @@
-import os
-from dotenv import load_dotenv
+import argparse
+import csv
+import logging
 
-load_dotenv()
+import config
+from driver_manager import DriverManager
+from email_reporter import EmailReporter
+from samsara_api import SamsaraAPI
 
-# Samsara API Configuration
-SAMSARA_API_KEY = os.getenv('SAMSARA_API_KEY')
-SAMSARA_BASE_URL = 'https://api.samsara.com'
 
-# Email Configuration
-SMTP_SERVER = os.getenv('SMTP_SERVER')
-SMTP_PORT = int(os.getenv('SMTP_PORT', 587))
-EMAIL_FROM = os.getenv('EMAIL_FROM')
-EMAIL_TO = os.getenv('EMAIL_TO', '').split(',')
+def validate_csv(csv_path: str) -> None:
+    """Basic CSV validation to ensure required columns exist."""
+    required_columns = {
+        "action",
+        "payroll_id",
+        "name",
+        "username",
+        "phone",
+        "license_number",
+        "license_state",
+        "location_tag_id",
+        "deactivation_reason",
+    }
+    with open(csv_path, "r", newline="", encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        missing = required_columns - set(reader.fieldnames or [])
+        if missing:
+            raise ValueError(f"CSV missing columns: {', '.join(sorted(missing))}")
+        sum(1 for _ in reader)
+
+
+def build_email_reporter() -> EmailReporter:
+    config_dict = {
+        "smtp_server": config.SMTP_SERVER,
+        "smtp_port": config.SMTP_PORT,
+        "smtp_username": config.SMTP_USERNAME,
+        "smtp_password": config.SMTP_PASSWORD,
+        "from_email": config.EMAIL_FROM,
+        "to_emails": config.EMAIL_TO,
+        "cc_emails": config.EMAIL_CC,
+        "use_tls": True,
+    }
+    return EmailReporter(config_dict, use_outlook=config.USE_OUTLOOK)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Samsara Fleet Driver Manager")
+    parser.add_argument("--csv", required=True, help="CSV file with driver updates")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        default=config.DRY_RUN_DEFAULT,
+        help="Run without making any changes",
+    )
+    parser.add_argument(
+        "--validate-only",
+        action="store_true",
+        help="Validate the CSV and exit",
+    )
+    args = parser.parse_args()
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    )
+
+    try:
+        validate_csv(args.csv)
+    except Exception as exc:
+        logging.error("CSV validation failed: %s", exc)
+        return 1
+
+    if args.validate_only:
+        logging.info("CSV validated successfully")
+        return 0
+
+    api = SamsaraAPI(config.SAMSARA_API_KEY, base_url=config.SAMSARA_BASE_URL)
+    manager = DriverManager(api, data_dir=config.DATA_DIR)
+
+    if args.dry_run:
+        logging.info("Dry-run mode enabled; no changes will be made")
+        return 0
+
+    operations = manager.process_driver_updates_from_csv(args.csv)
+    stats = manager.get_summary_stats()
+
+    reporter = build_email_reporter()
+    reporter.send_operations_report(operations, stats)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

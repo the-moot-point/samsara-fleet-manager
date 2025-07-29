@@ -187,20 +187,20 @@ def stats(file_path: str = None) -> None:
     usernames = load_usernames_from_file(file_path)
     duplicates = check_duplicates(file_path)
     
-    print(f"\nUsername File Statistics:")
+    print("\nUsername File Statistics:")
     print(f"  File: {file}")
     print(f"  Total unique usernames: {len(usernames)}")
     print(f"  Duplicates found: {len(duplicates)}")
     
     if duplicates:
-        print(f"\n  Duplicate usernames:")
+        print("\n  Duplicate usernames:")
         for dup in duplicates[:10]:  # Show first 10
             print(f"    - {dup}")
         if len(duplicates) > 10:
             print(f"    ... and {len(duplicates) - 10} more")
     
     # Analyze patterns
-    print(f"\n  Username patterns:")
+    print("\n  Username patterns:")
     patterns = {
         'single_letter': 0,
         'with_numbers': 0,
