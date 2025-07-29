@@ -2,6 +2,7 @@ import os
 import sys
 import types
 import importlib
+import csv
 
 # Set required env vars for config validation
 os.environ.setdefault("SAMSARA_API_KEY", "dummy")
@@ -93,3 +94,70 @@ def test_create_driver_existing(tmp_path):
     err = mgr.operations_log["errors"][0]
     assert err["row"] == row
     assert err["error"] == "Driver already exists"
+
+def test_process_with_headcount_update_only(tmp_path):
+    mgr, api = make_manager(tmp_path)
+    api.drivers["P1"] = {"id": "d1", "name": "Old Name", "externalIds": {}}
+    hc_map = {
+        "P1": {
+            "name": "Dana Jones",
+            "email": "d1@example.com",
+            "phone": "555",
+            "location_tag_id": "L1",
+        }
+    }
+    csv_file = tmp_path / "drivers.csv"
+    with open(csv_file, "w", newline="", encoding="utf-8") as fh:
+        writer = csv.writer(fh)
+        writer.writerow([
+            "action",
+            "payroll_id",
+            "name",
+            "username",
+            "phone",
+            "license_number",
+            "license_state",
+            "location_tag_id",
+            "deactivation_reason",
+        ])
+        writer.writerow(["update", "P1", "", "", "", "", "", "", ""])
+    mgr.process_driver_updates_from_csv(str(csv_file), headcount_map=hc_map)
+    driver_id, update_data = api.updated[0]
+    assert driver_id == "d1"
+    assert update_data["phone"] == "555"
+    assert update_data["externalIds"]["email"] == "d1@example.com"
+    assert update_data["tagIds"] == ["L1"]
+    assert update_data["name"] == "Dana Jones"
+
+
+def test_headcount_not_used_for_create(tmp_path):
+    mgr, api = make_manager(tmp_path)
+    hc_map = {
+        "P1": {
+            "name": "Dana Jones",
+            "email": "d1@example.com",
+            "phone": "555",
+            "location_tag_id": "L1",
+        }
+    }
+    csv_file = tmp_path / "drivers.csv"
+    with open(csv_file, "w", newline="", encoding="utf-8") as fh:
+        writer = csv.writer(fh)
+        writer.writerow([
+            "action",
+            "payroll_id",
+            "name",
+            "username",
+            "phone",
+            "license_number",
+            "license_state",
+            "location_tag_id",
+            "deactivation_reason",
+        ])
+        writer.writerow(["create", "P1", "", "dana", "", "", "", "", ""])
+    mgr.process_driver_updates_from_csv(str(csv_file), headcount_map=hc_map)
+    # Creation should fail due to missing name
+    assert not api.created
+    assert mgr.operations_log["errors"]
+    err = mgr.operations_log["errors"][0]
+    assert err["error"] == "Driver name is required for creation"

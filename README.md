@@ -6,6 +6,7 @@ An automated system for managing driver records in Samsara Fleet Management via 
 
 - **Create new drivers** in Samsara from CSV data
 - **Update driver information** (phone, license, location tags)
+- **Sync updates with Headcount data** for phone, location, and email
 - **Deactivate drivers** with reasons
 - **Email reports** of all operations performed
 - **Error handling** and detailed logging
@@ -102,17 +103,20 @@ Claude Code can help you:
 
 ### Manual Run
 ```bash
-python main.py --csv input/new_hires_example.csv
+python main.py --csv input/new_hires_example.csv \
+  --headcount "Headcount Report.xlsx"
 ```
 
 ### Dry Run (Test Mode)
 ```bash
-python main.py --csv input/new_hires_example.csv --dry-run
+python main.py --csv input/new_hires_example.csv \
+  --headcount "Headcount Report.xlsx" --dry-run
 ```
 
 ### Validate CSV Only
 ```bash
-python main.py --csv input/new_hires_example.csv --validate-only
+python main.py --csv input/new_hires_example.csv \
+  --headcount "Headcount Report.xlsx" --validate-only
 ```
 
 ## Windows Task Scheduler Setup
@@ -125,7 +129,7 @@ python main.py --csv input/new_hires_example.csv --validate-only
 
 3. Configure the Action:
    - **Program/script**: `C:\Python39\python.exe` (your Python path)
-   - **Arguments**: `main.py --csv input/new_hires_example.csv`
+   - **Arguments**: `main.py --csv input/new_hires_example.csv --headcount "Headcount Report.xlsx"`
    - **Start in**: `C:\path\to\samsara-fleet-manager`
 
 4. Additional Settings:
