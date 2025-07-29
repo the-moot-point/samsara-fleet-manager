@@ -6,7 +6,7 @@ Validates mapping files and checks for common issues
 import csv
 from pathlib import Path
 import sys
-from typing import Set, Dict, List, Tuple
+from typing import Set, Tuple
 
 def validate_mappings(mappings_dir: str = "./mappings") -> bool:
     """
@@ -272,7 +272,7 @@ def check_sample_new_hire(mappings_dir: str = "./mappings") -> None:
             if is_valid:
                 position_tag = manager.get_position_tag(hire['Position'])
                 location_tag, timezone = manager.get_location_info(hire['Location_Desc'])
-                print(f"    ✓ Would be added to Samsara")
+                print("    ✓ Would be added to Samsara")
                 print(f"      Position Tag: {position_tag}")
                 print(f"      Location Tag: {location_tag}")
                 print(f"      Timezone: {timezone}")

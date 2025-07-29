@@ -4,12 +4,11 @@ Generates and sends reports about driver management operations
 """
 
 import logging
-from typing import Dict, List, Optional
+from typing import Dict, List
 from datetime import datetime
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from pathlib import Path
 
 # Try to import win32com for Outlook integration
 try:
@@ -232,7 +231,7 @@ class EmailReporter:
             try:
                 dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
                 return dt.strftime('%Y-%m-%d %H:%M')
-            except:
+            except Exception:
                 return timestamp
         
         def format_row(row):

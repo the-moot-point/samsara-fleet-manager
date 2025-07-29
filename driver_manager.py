@@ -5,13 +5,12 @@ Handles business logic for driver operations using Samsara API
 
 import logging
 import csv
-from typing import Dict, List, Tuple, Optional, Set
+from typing import Dict, List, Set
 from datetime import datetime
 import json
 from pathlib import Path
-import re
 
-from samsara_api import SamsaraAPI, SamsaraAPIError
+from samsara_api import SamsaraAPI
 from mappings_manager import MappingsManager
 from config import USERNAMES_FILE
 
@@ -46,6 +45,22 @@ class DriverManager:
         
         # Cache for existing usernames to ensure uniqueness
         self._existing_usernames: Set[str] = set()
+
+    def _load_existing_usernames(self) -> None:
+        """Load usernames from the usernames CSV file."""
+        usernames_file = Path(USERNAMES_FILE)
+        if not usernames_file.exists():
+            return
+
+        try:
+            with open(usernames_file, "r", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    username = row.get("username", "").strip().lower()
+                    if username:
+                        self._existing_usernames.add(username)
+        except Exception as exc:
+            logger.error("Failed to load usernames: %s", exc)
     
     def process_driver_updates_from_csv(self, csv_file: str) -> Dict[str, List]:
         """
@@ -151,9 +166,10 @@ class DriverManager:
         
         # Create the driver
         created = self.api.create_driver(driver_data)
-        
+
         # Save the username to file for future uniqueness checks
-        self._save_username_to_file(username)
+        if row.get("username"):
+            self._save_username_to_file(row["username"])
         
         self.operations_log['created'].append({
             'driver_id': created['id'],
@@ -191,7 +207,7 @@ class DriverManager:
             update_data['tagIds'] = current_tags
         
         if update_data:
-            updated = self.api.update_driver(driver['id'], update_data)
+            self.api.update_driver(driver['id'], update_data)
             
             self.operations_log['updated'].append({
                 'driver_id': driver['id'],
@@ -221,7 +237,7 @@ class DriverManager:
             return
         
         reason = row.get('deactivation_reason', 'No reason provided')
-        deactivated = self.api.deactivate_driver(driver['id'], reason)
+        self.api.deactivate_driver(driver['id'], reason)
         
         self.operations_log['deactivated'].append({
             'driver_id': driver['id'],
