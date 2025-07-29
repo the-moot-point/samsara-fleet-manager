@@ -66,8 +66,14 @@ class DriverManager:
                         self._existing_usernames.add(username)
         except Exception as exc:
             logger.error("Failed to load usernames: %s", exc)
+            
+    def process_driver_updates_from_csv(
+        self,
+        csv_file: str,
+        *,
+        headcount_map: Dict[str, Dict[str, str]] | None = None,
+    ) -> Dict[str, List]:
 
-    def process_driver_updates_from_csv(self, csv_file: str) -> Dict[str, List]:
         """
         Process driver updates from a CSV file
 
@@ -84,6 +90,8 @@ class DriverManager:
 
         Args:
             csv_file: Path to CSV file with driver updates
+            headcount_map: Optional mapping of payroll IDs to additional fields
+            
 
         Returns:
             Dictionary with operation results
@@ -97,7 +105,28 @@ class DriverManager:
             reader = csv.DictReader(f)
 
             for row in reader:
-                action = row.get("action", "").lower()
+
+                action = row.get('action', '').lower()
+
+                # Merge data from headcount file if available when updating
+                payroll_id = row.get('payroll_id')
+                if (
+                    action == 'update'
+                    and headcount_map
+                    and payroll_id
+                    and payroll_id in headcount_map
+                ):
+                    hc = headcount_map[payroll_id]
+                    if hc.get('phone') and not row.get('phone'):
+                        row['phone'] = hc['phone']
+                    if hc.get('location_tag_id') and not row.get('location_tag_id'):
+                        row['location_tag_id'] = hc['location_tag_id']
+                    # Store email separately for externalIds
+                    if hc.get('email'):
+                        row.setdefault('headcount_email', hc['email'])
+                    if hc.get('name') and not row.get('name'):
+                        row['name'] = hc['name']
+                
 
                 try:
                     if action == "create":
@@ -132,8 +161,15 @@ class DriverManager:
 
     def _create_driver_from_row(self, row: Dict[str, str]) -> None:
         """Create a driver from CSV row data"""
-        driver_data = {"name": row["name"], "driverActivationStatus": "active"}
 
+        if not row.get('name'):
+            raise ValueError("Driver name is required for creation")
+
+        driver_data = {
+            'name': row['name'],
+            'driverActivationStatus': 'active'
+        }
+        
         # Add optional fields if present
         if row.get("username"):
             # Check if username is unique
@@ -148,17 +184,25 @@ class DriverManager:
                     }
                 )
                 return
-            driver_data["username"] = row["username"]
-        if row.get("phone"):
-            driver_data["phone"] = row["phone"]
-        if row.get("license_number"):
-            driver_data["licenseNumber"] = row["license_number"]
-        if row.get("license_state"):
-            driver_data["licenseState"] = row["license_state"]
-        if row.get("payroll_id"):
-            driver_data["externalIds"] = {"payrollId": row["payroll_id"]}
-        if row.get("location_tag_id"):
-            driver_data["tagIds"] = [row["location_tag_id"]]
+
+            driver_data['username'] = row['username']
+        if row.get('phone'):
+            driver_data['phone'] = row['phone']
+        if row.get('license_number'):
+            driver_data['licenseNumber'] = row['license_number']
+        if row.get('license_state'):
+            driver_data['licenseState'] = row['license_state']
+        external_ids = {}
+        if row.get('payroll_id'):
+            external_ids['payrollId'] = row['payroll_id']
+        email_from_hc = row.get('headcount_email') or row.get('email')
+        if email_from_hc:
+            external_ids['email'] = email_from_hc
+        if external_ids:
+            driver_data['externalIds'] = external_ids
+        if row.get('location_tag_id'):
+            driver_data['tagIds'] = [row['location_tag_id']]
+        
 
         # Check if driver already exists
         if row.get("payroll_id"):
@@ -216,10 +260,21 @@ class DriverManager:
             update_data["licenseState"] = row["license_state"]
         if row.get("location_tag_id"):
             # Preserve existing tags and add new one
-            current_tags = driver.get("tagIds", [])
-            if row["location_tag_id"] not in current_tags:
-                current_tags.append(row["location_tag_id"])
-            update_data["tagIds"] = current_tags
+
+            current_tags = driver.get('tagIds', [])
+            if row['location_tag_id'] not in current_tags:
+                current_tags.append(row['location_tag_id'])
+            update_data['tagIds'] = current_tags
+        if row.get('name') and row['name'] != driver.get('name'):
+            update_data['name'] = row['name']
+
+        email_from_hc = row.get('headcount_email') or row.get('email')
+        if email_from_hc:
+            external_ids = driver.get('externalIds', {}).copy()
+            if external_ids.get('email') != email_from_hc:
+                external_ids['email'] = email_from_hc
+                update_data['externalIds'] = external_ids
+        
 
         if update_data:
             self.api.update_driver(driver["id"], update_data)

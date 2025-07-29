@@ -4,6 +4,7 @@ import logging
 
 import config
 from driver_manager import DriverManager
+from headcount_loader import load_headcount_data
 from email_reporter import EmailReporter
 from samsara_api import SamsaraAPI
 
@@ -47,6 +48,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Samsara Fleet Driver Manager")
     parser.add_argument("--csv", required=True, help="CSV file with driver updates")
     parser.add_argument(
+        "--headcount",
+        default=config.HEADCOUNT_FILE,
+        help="Path to Headcount Report.xlsx for merging update data",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         default=config.DRY_RUN_DEFAULT,
@@ -77,11 +83,20 @@ def main() -> int:
     api = SamsaraAPI(config.SAMSARA_API_KEY, base_url=config.SAMSARA_BASE_URL)
     manager = DriverManager(api, data_dir=config.DATA_DIR)
 
+    headcount_map = None
+    try:
+        headcount_map = load_headcount_data(args.headcount)
+        logging.info("Loaded headcount data from %s", args.headcount)
+    except Exception as exc:
+        logging.warning("Could not load headcount data: %s", exc)
+
     if args.dry_run:
         logging.info("Dry-run mode enabled; no changes will be made")
         return 0
 
-    operations = manager.process_driver_updates_from_csv(args.csv)
+    operations = manager.process_driver_updates_from_csv(
+        args.csv, headcount_map=headcount_map
+    )
     stats = manager.get_summary_stats()
 
     reporter = build_email_reporter()
