@@ -15,20 +15,24 @@ An automated system for managing driver records in Samsara Fleet Management via 
 
 ```
 samsara-fleet-manager/
-├── config.py              # Configuration settings
-├── samsara_api.py         # Samsara API wrapper
-├── driver_manager.py      # Driver operations logic
-├── email_reporter.py      # Email report generation
-├── main.py               # Main entry point for Task Scheduler
-├── requirements.txt      # Python dependencies
-├── .env                  # Environment variables (create from .env.example)
-├── .env.example          # Example environment configuration
-├── README.md             # This file
-├── input/                # Input CSV files directory
-│   └── driver_updates.csv
-├── data/                 # Operation logs directory
-├── logs/                 # Application logs directory
-└── driver_updates_example.csv  # Example CSV format
+├── samsara_fleet_manager/   # Python package with application modules
+│   ├── __init__.py
+│   ├── api.py
+│   ├── driver_manager.py
+│   ├── email_reporter.py
+│   └── username_utils.py
+├── mappings/                # Lookup CSV files used for validation
+│   ├── positions.csv
+│   ├── locations.csv
+│   └── never_positions.csv
+├── input/                   # Input CSV files directory
+│   └── new_hires_example.csv
+├── main.py                  # Entry point when running manually
+├── config.py                # Configuration helpers
+├── requirements.txt         # Python dependencies
+├── .env.example             # Example environment configuration
+├── README.md                # Project documentation
+└── tests/                   # Unit tests
 ```
 
 ## Setup Instructions
@@ -36,7 +40,7 @@ samsara-fleet-manager/
 ### 1. Install Python Dependencies
 
 ```bash
-pip install -r requirements.txt
+python -m pip install -r requirements.txt -r requirements-dev.txt
 ```
 
 If using Outlook for email:
@@ -48,7 +52,7 @@ pip install pywin32
 
 1. Copy `.env.example` to `.env`:
    ```bash
-   copy .env.example .env
+   cp .env.example .env  # use `copy` on Windows
    ```
 
 2. Edit `.env` and add your configuration:
@@ -58,7 +62,7 @@ pip install pywin32
 
 ### 3. Prepare Input Data
 
-Create a CSV file in the `input/` directory with driver updates. See `driver_updates_example.csv` for the format.
+Create a CSV file in the `input/` directory with new-hire details. See `new_hires_example.csv` for the format.
 
 CSV columns:
 - **action**: `create`, `update`, or `deactivate`
@@ -92,17 +96,17 @@ Claude Code can help you:
 
 ### Manual Run
 ```bash
-python main.py --csv input/driver_updates.csv
+python main.py --csv input/new_hires_example.csv
 ```
 
 ### Dry Run (Test Mode)
 ```bash
-python main.py --csv input/driver_updates.csv --dry-run
+python main.py --csv input/new_hires_example.csv --dry-run
 ```
 
 ### Validate CSV Only
 ```bash
-python main.py --csv input/driver_updates.csv --validate-only
+python main.py --csv input/new_hires_example.csv --validate-only
 ```
 
 ## Windows Task Scheduler Setup
@@ -115,7 +119,7 @@ python main.py --csv input/driver_updates.csv --validate-only
 
 3. Configure the Action:
    - **Program/script**: `C:\Python39\python.exe` (your Python path)
-   - **Arguments**: `main.py --csv input/driver_updates.csv`
+   - **Arguments**: `main.py --csv input/new_hires_example.csv`
    - **Start in**: `C:\path\to\samsara-fleet-manager`
 
 4. Additional Settings:
