@@ -6,7 +6,7 @@ Handles business logic for driver operations using Samsara API
 import logging
 import csv
 from typing import Dict, List, Set
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 from pathlib import Path
 
@@ -190,7 +190,6 @@ class DriverManager:
                 "driver_id": created["id"],
                 "name": created["name"],
                 "payroll_id": row.get("payroll_id"),
-                "timestamp": datetime.utcnow().isoformat(),
             }
         )
 
