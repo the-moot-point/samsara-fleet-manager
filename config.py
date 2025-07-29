@@ -32,6 +32,7 @@ DATA_DIR = os.getenv('DATA_DIR', './data')
 LOG_DIR = os.getenv('LOG_DIR', './logs')
 MAPPINGS_DIR = os.getenv('MAPPINGS_DIR', './mappings')
 USERNAMES_FILE = os.getenv('USERNAMES_FILE', './usernames.csv')
+HEADCOUNT_FILE = os.getenv('HEADCOUNT_FILE', 'Headcount Report.xlsx')
 
 # Operational settings
 DRY_RUN_DEFAULT = os.getenv('DRY_RUN_DEFAULT', 'False').lower() == 'true'
