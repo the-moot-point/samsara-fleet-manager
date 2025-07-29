@@ -21,9 +21,10 @@ samsara-fleet-manager/
 ├── username_utils.py        # Username utilities
 ├── config.py                # Configuration helpers
 ├── validate_mappings_script.py
-├── positions.csv            # Mapping files
-├── locations.csv
-├── never_positions.csv
+├── mappings/                # Mapping files
+│   ├── positions.csv
+│   ├── locations.csv
+│   └── never_positions.csv
 ├── usernames.csv
 ├── input/                   # Input CSV files directory
 │   ├── new_hires_example.csv

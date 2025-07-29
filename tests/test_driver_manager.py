@@ -43,8 +43,10 @@ def _install_stubs():
     sys.modules["samsara_api"] = api_mod
 
     mm_mod = types.ModuleType("mappings_manager")
+
     class DummyMappingsManager:
         pass
+
     mm_mod.MappingsManager = DummyMappingsManager
     sys.modules["mappings_manager"] = mm_mod
 
