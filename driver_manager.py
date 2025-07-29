@@ -6,7 +6,7 @@ Handles business logic for driver operations using Samsara API
 import logging
 import csv
 from typing import Dict, List, Set
-from datetime import datetime, timezone
+from datetime import datetime
 import json
 from pathlib import Path
 
