@@ -3,19 +3,21 @@ Username Utilities
 Tools for managing the usernames.csv file
 """
 
+from __future__ import annotations
+
+import argparse
 import csv
 import sys
 from pathlib import Path
-from typing import Set, List
-import argparse
+from typing import List, Set
 
 from config import SAMSARA_API_KEY, USERNAMES_FILE
 from samsara_api import SamsaraAPI
 
 
-def load_usernames_from_file(file_path: str = None) -> Set[str]:
+def load_usernames_from_file(file_path: str | None = None) -> Set[str]:
     """Load usernames from CSV file"""
-    usernames = set()
+    usernames: Set[str] = set()
     file = Path(file_path or USERNAMES_FILE)
 
     if not file.exists():
@@ -32,7 +34,7 @@ def load_usernames_from_file(file_path: str = None) -> Set[str]:
     return usernames
 
 
-def sync_usernames_from_samsara(output_file: str = None) -> int:
+def sync_usernames_from_samsara(output_file: str | None = None) -> int:
     """
     Sync usernames from Samsara API to local CSV file
 
@@ -43,7 +45,7 @@ def sync_usernames_from_samsara(output_file: str = None) -> int:
     print("Syncing usernames from Samsara...")
 
     # Initialize API
-    api = SamsaraAPI(SAMSARA_API_KEY)
+    api = SamsaraAPI(SAMSARA_API_KEY or "")
 
     # Get all drivers
     try:
@@ -51,7 +53,7 @@ def sync_usernames_from_samsara(output_file: str = None) -> int:
         print(f"Found {len(drivers)} drivers in Samsara")
 
         # Extract usernames
-        usernames = []
+        usernames: List[str] = []
         for driver in drivers:
             if driver.get("username"):
                 usernames.append(driver["username"])
@@ -73,7 +75,7 @@ def sync_usernames_from_samsara(output_file: str = None) -> int:
         return 0
 
 
-def check_duplicates(file_path: str = None) -> List[str]:
+def check_duplicates(file_path: str | None = None) -> List[str]:
     """Check for duplicate usernames in the file"""
     file = Path(file_path or USERNAMES_FILE)
 
@@ -81,8 +83,8 @@ def check_duplicates(file_path: str = None) -> List[str]:
         print(f"File not found: {file}")
         return []
 
-    seen = set()
-    duplicates = []
+    seen: Set[str] = set()
+    duplicates: List[str] = []
 
     with open(file, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
@@ -97,7 +99,7 @@ def check_duplicates(file_path: str = None) -> List[str]:
     return duplicates
 
 
-def clean_usernames_file(file_path: str = None) -> int:
+def clean_usernames_file(file_path: str | None = None) -> int:
     """
     Clean the usernames file by removing duplicates and empty entries
 
@@ -111,7 +113,7 @@ def clean_usernames_file(file_path: str = None) -> int:
         return 0
 
     # Read unique usernames
-    unique_usernames = set()
+    unique_usernames: Set[str] = set()
     total_rows = 0
 
     with open(file, "r", encoding="utf-8") as f:
@@ -138,7 +140,7 @@ def clean_usernames_file(file_path: str = None) -> int:
     return removed
 
 
-def add_username(username: str, file_path: str = None) -> bool:
+def add_username(username: str, file_path: str | None = None) -> bool:
     """
     Add a username to the file if it doesn't exist
 
@@ -163,7 +165,7 @@ def add_username(username: str, file_path: str = None) -> bool:
     return True
 
 
-def check_username(username: str, file_path: str = None) -> bool:
+def check_username(username: str, file_path: str | None = None) -> bool:
     """Check if a username exists in the file"""
     existing = load_usernames_from_file(file_path)
     exists = username.lower() in existing
@@ -176,7 +178,7 @@ def check_username(username: str, file_path: str = None) -> bool:
     return exists
 
 
-def stats(file_path: str = None) -> None:
+def stats(file_path: str | None = None) -> None:
     """Display statistics about the usernames file"""
     file = Path(file_path or USERNAMES_FILE)
 

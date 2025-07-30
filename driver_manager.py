@@ -1,15 +1,14 @@
-"""
-Driver Manager
-Handles business logic for driver operations using Samsara API
-"""
+"""Driver Manager
+Handles business logic for driver operations using Samsara API."""
 
-import logging
+from __future__ import annotations
+
 import csv
-from typing import Dict, List, Set
-from datetime import datetime
+import logging
 import json
+from datetime import datetime
 from pathlib import Path
-
+from typing import Any, Dict, List, Optional, Set
 from samsara_api import SamsaraAPI
 from mappings_manager import MappingsManager
 from config import USERNAMES_FILE
@@ -23,7 +22,7 @@ class DriverManager:
     def __init__(
         self,
         api: SamsaraAPI,
-        mappings_manager: MappingsManager = None,
+        mappings_manager: Optional[MappingsManager] = None,
         data_dir: str = "./data",
     ):
         """
@@ -40,7 +39,7 @@ class DriverManager:
         self.data_dir.mkdir(exist_ok=True)
 
         # Track operations for reporting
-        self.operations_log = {
+        self.operations_log: Dict[str, List] = {
             "created": [],
             "updated": [],
             "deactivated": [],
@@ -71,7 +70,7 @@ class DriverManager:
         self,
         csv_file: str,
         *,
-        headcount_map: Dict[str, Dict[str, str]] | None = None,
+        headcount_map: Optional[Dict[str, Dict[str, str]]] = None,
     ) -> Dict[str, List]:
         """
         Process driver updates from a CSV file
@@ -162,7 +161,10 @@ class DriverManager:
         if not row.get("name"):
             raise ValueError("Driver name is required for creation")
 
-        driver_data = {"name": row["name"], "driverActivationStatus": "active"}
+        driver_data: Dict[str, Any] = {
+            "name": row["name"],
+            "driverActivationStatus": "active",
+        }
 
         # Add optional fields if present
         if row.get("username"):
@@ -186,7 +188,7 @@ class DriverManager:
             driver_data["licenseNumber"] = row["license_number"]
         if row.get("license_state"):
             driver_data["licenseState"] = row["license_state"]
-        external_ids = {}
+        external_ids: Dict[str, str] = {}
         if row.get("payroll_id"):
             external_ids["payrollId"] = row["payroll_id"]
         email_from_hc = row.get("headcount_email") or row.get("email")
@@ -405,7 +407,7 @@ if __name__ == "__main__":
     from config import SAMSARA_API_KEY
 
     # Initialize API and manager
-    api = SamsaraAPI(SAMSARA_API_KEY)
+    api = SamsaraAPI(SAMSARA_API_KEY or "")
     manager = DriverManager(api)
 
     # Process updates from CSV

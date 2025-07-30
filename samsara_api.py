@@ -3,8 +3,15 @@
 from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
+import os
 
-import requests
+import requests  # type: ignore[import]
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 
 class SamsaraAPI:
@@ -27,14 +34,32 @@ class SamsaraAPI:
         json: Optional[Dict[str, Any]] = None,
     ) -> Any:
         url = f"{self.base_url}{path}"
-        response = requests.request(
-            method,
-            url,
-            headers=self.headers,
-            params=params,
-            json=json,
-            timeout=30,
+
+        max_attempts = int(os.getenv("SAMSARA_RETRY_ATTEMPTS", "5"))
+        max_wait = int(os.getenv("SAMSARA_RETRY_MAX_WAIT", "32"))
+
+        @retry(
+            reraise=True,
+            stop=stop_after_attempt(max_attempts),
+            wait=wait_exponential(multiplier=1, max=max_wait),
+            retry=retry_if_exception_type(requests.RequestException),
         )
+        def send() -> requests.Response:
+            response = requests.request(
+                method,
+                url,
+                headers=self.headers,
+                params=params,
+                json=json,
+                timeout=30,
+            )
+            if response.status_code >= 500 or response.status_code == 429:
+                raise requests.HTTPError(
+                    f"HTTP {response.status_code}", response=response
+                )
+            return response
+
+        response = send()
         response.raise_for_status()
         if response.content:
             return response.json()
