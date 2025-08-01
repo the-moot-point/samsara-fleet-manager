@@ -1,3 +1,4 @@
 pytest
 ruff
 python-dotenv
+black==24.4.2
