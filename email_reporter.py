@@ -3,8 +3,10 @@ Email Reporter
 Generates and sends reports about driver management operations
 """
 
+from __future__ import annotations
+
 import logging
-from typing import Dict, List
+from typing import Any, Dict, List
 from datetime import datetime
 import smtplib
 from email.mime.text import MIMEText
@@ -25,9 +27,9 @@ logger = logging.getLogger(__name__)
 
 
 class EmailReporter:
-    """Generates and sends email reports for driver operations"""
+    """Generates and sends email reports for driver operations."""
 
-    def __init__(self, config: Dict[str, any], use_outlook: bool = False):
+    def __init__(self, config: Dict[str, Any], use_outlook: bool = False) -> None:
         """
         Initialize Email Reporter
 
@@ -82,7 +84,8 @@ class EmailReporter:
     ) -> str:
         """Generate HTML email report"""
 
-        template = Template("""
+        template = Template(
+            """
 <!DOCTYPE html>
 <html>
 <head>
@@ -229,23 +232,24 @@ class EmailReporter:
     </div>
 </body>
 </html>
-        """)
+        """
+        )
 
         # Custom filters
-        def format_time(timestamp):
+        def format_time(timestamp: str) -> str:
             try:
                 dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
                 return dt.strftime("%Y-%m-%d %H:%M")
             except Exception:
                 return timestamp
 
-        def format_row(row):
+        def format_row(row: object) -> str:
             if isinstance(row, dict):
                 return f"{row.get('name', 'Unknown')} ({row.get('payroll_id', 'N/A')})"
             return str(row)
 
-        template.filters["format_time"] = format_time
-        template.filters["format_row"] = format_row
+        template.filters["format_time"] = format_time  # type: ignore[attr-defined]
+        template.filters["format_row"] = format_row  # type: ignore[attr-defined]
 
         # Render template
         html = template.render(

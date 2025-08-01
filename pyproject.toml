@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "samsara-fleet-manager"
+version = "0.0.0"
+description = "Samsara Fleet Driver Management System"
+authors = [{name = "Samsara Fleet Manager maintainers"}]
+license = {text = "MIT"}
+requires-python = ">=3.10"
+
+# Dependencies
+dependencies = [
+    "requests>=2.31.0",
+    "python-dotenv>=1.0.0",
+    "pandas>=2.0.0",
+    "jinja2>=3.1.0",
+    "tenacity>=8.2.2",
+    "pywin32>=305; sys_platform == 'win32'",
+    "openpyxl>=3.1.0",
+    "python-dateutil>=2.8.0",
+    "pytz>=2023.3",
+]
+
+[project.optional-dependencies]
+# Development dependencies
+dev = [
+    "pytest",
+    "ruff",
+    "python-dotenv",
+]
+
+[project.scripts]
+samsara-driver-sync = "main:cli_entry"
+
+[tool.black]
+line-length = 88
+
+[tool.ruff]
+line-length = 88
+
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+python_files = "test_*.py"
+pythonpath = ["."]
+[tool.setuptools]
+py-modules = [
+    "config",
+    "driver_manager",
+    "email_reporter",
+    "headcount_loader",
+    "main",
+    "mappings_manager",
+    "samsara_api",
+    "username_utils",
+    "validate_mappings_script",
+]

@@ -2,7 +2,6 @@ import argparse
 import csv
 import logging
 
-import config
 from driver_manager import DriverManager
 from headcount_loader import load_headcount_data
 from email_reporter import EmailReporter
@@ -31,6 +30,8 @@ def validate_csv(csv_path: str) -> None:
 
 
 def build_email_reporter() -> EmailReporter:
+    import config
+
     config_dict = {
         "smtp_server": config.SMTP_SERVER,
         "smtp_port": config.SMTP_PORT,
@@ -45,6 +46,8 @@ def build_email_reporter() -> EmailReporter:
 
 
 def main() -> int:
+    import config
+
     parser = argparse.ArgumentParser(description="Samsara Fleet Driver Manager")
     parser.add_argument("--csv", required=True, help="CSV file with driver updates")
     parser.add_argument(
@@ -104,5 +107,10 @@ def main() -> int:
     return 0
 
 
-if __name__ == "__main__":
+def cli_entry() -> None:
+    """Entry point for console script."""
     raise SystemExit(main())
+
+
+if __name__ == "__main__":
+    cli_entry()

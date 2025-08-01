@@ -3,6 +3,7 @@ requests>=2.31.0          # For Samsara API calls
 python-dotenv>=1.0.0      # For environment variables
 pandas>=2.0.0             # For CSV processing
 jinja2>=3.1.0            # For email templates
+tenacity>=8.2.2         # For API retries
 
 # Windows-specific for Outlook integration
 pywin32>=305             # For Outlook COM automation
