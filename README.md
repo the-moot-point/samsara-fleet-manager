@@ -167,9 +167,25 @@ Reports are sent only when operations are performed.
 
 ## Logging
 
-Logs are stored in the `logs/` directory with daily rotation:
-- Format: `samsara_driver_sync_YYYYMMDD.log`
-- Includes timestamps, operation details, and errors
+The tool writes human-readable logs to the console. Each run also
+generates a JSON operations log in the `data/` directory:
+
+- Files are named `operations_log_YYYYMMDD_HHMMSS.json`
+- Entries include timestamps, operation details, and errors
+
+To additionally capture logs to a file, update the
+`logging.basicConfig` call in `main.py` to add a `FileHandler`:
+
+```python
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler("driver_sync.log"),
+    ],
+)
+```
 
 ## Error Handling
 
@@ -206,7 +222,7 @@ logging.basicConfig(level=logging.DEBUG, ...)
 
 - Never commit `.env` file to version control
 - Store API keys securely
-- Restrict access to log and data directories
+- Restrict access to the data directory and any log files you create
 - Use service accounts for automated runs
 
 ## Support
@@ -214,7 +230,7 @@ logging.basicConfig(level=logging.DEBUG, ...)
 For Samsara API documentation: https://developers.samsara.com/docs/introduction
 
 For issues with this system:
-1. Check the logs in `logs/` directory
+1. Review the console output or JSON logs in the `data/` directory
 2. Validate your CSV format
 3. Test with `--dry-run` mode
 4. Verify API key permissions in Samsara
