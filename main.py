@@ -102,8 +102,11 @@ def main() -> int:
     )
     stats = manager.get_summary_stats()
 
-    reporter = build_email_reporter()
-    reporter.send_operations_report(operations, stats)
+    if sum(stats.values()) > 0:
+        reporter = build_email_reporter()
+        reporter.send_operations_report(operations, stats)
+    else:
+        logging.info("No operations performed; skipping report")
     return 0
 
 
