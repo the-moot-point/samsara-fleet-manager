@@ -16,27 +16,43 @@ An automated system for managing driver records in Samsara Fleet Management via 
 
 ```
 samsara-fleet-manager/
-├── main.py                  # Entry point when running manually
-├── driver_manager.py        # Core driver logic
-├── email_reporter.py        # Email reporting helpers
-├── username_utils.py        # Username utilities
-├── config.py                # Configuration helpers
-├── validate_mappings_script.py
-├── mappings/                # Mapping files
+├── main.py                      # Entry point when running manually
+├── driver_manager.py            # Core driver logic
+├── headcount_loader.py          # Load headcount spreadsheet data
+├── mappings_manager.py          # Manage mapping CSVs
+├── samsara_api.py               # Samsara API client
+├── email_reporter.py            # Email reporting helpers
+├── username_utils.py            # Username utilities
+├── config.py                    # Configuration helpers
+├── validate_mappings_script.py  # Validate mapping files
+├── mappings/                    # Mapping files
 │   ├── positions.csv
 │   ├── locations.csv
 │   └── never_positions.csv
-├── usernames.csv
-├── input/                   # Input CSV files directory
+├── usernames.csv                # Reserved usernames list
+├── input/                       # Input CSV files directory
 │   ├── new_hires_example.csv
 │   └── NEW_HIRES_example.xlsx
-├── Headcount Report.xlsx    # Example spreadsheet for verifying totals
-├── requirements.txt         # Python dependencies
-├── requirements-dev.txt     # Developer dependencies
-├── .env.example             # Example environment configuration
-├── README.md                # Project documentation
-├── tests/                   # Unit tests
-└── pytest.ini
+├── .github/                     # GitHub configuration
+│   └── workflows/
+│       └── ci.yml
+├── docker-compose.yml           # Docker Compose configuration
+├── Dockerfile                   # Docker build instructions
+├── run_driver_update.bat.txt    # Example Windows batch script
+├── pyproject.toml               # Project metadata and tooling
+├── mypy.ini                     # Mypy type-checking settings
+├── codex.yaml                   # Codex CLI configuration
+├── codex.md                     # Codex project guide
+├── SECURITY.md                  # Security guidelines
+├── 'APIExample_create_a_driver - Request.txt'   # Sample API request
+├── 'APIExample_create_a_driver - Response.txt'  # Sample API response
+├── Headcount Report.xlsx        # Example spreadsheet for verifying totals
+├── requirements.txt             # Python dependencies
+├── requirements-dev.txt         # Developer dependencies
+├── .env.example                 # Example environment configuration
+├── README.md                    # Project documentation
+├── tests/                       # Unit tests
+└── pytest.ini                   # Pytest configuration
 ```
 
 ## Setup Instructions
